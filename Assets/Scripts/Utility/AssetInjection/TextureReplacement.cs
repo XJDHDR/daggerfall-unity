@@ -85,7 +85,7 @@ namespace DaggerfallWorkshop.Utility.AssetInjection
     {
         #region Fields
 
-        const string extension = ".png";
+        static readonly string[] extensions = { ".dds", ".png" };
 
         // Paths
         static readonly string texturesPath = Path.Combine(Application.streamingAssetsPath, "Textures");
@@ -773,8 +773,15 @@ namespace DaggerfallWorkshop.Utility.AssetInjection
         /// <returns>True if texture is found.</returns>
         public static bool TextureExistsAmongLooseFiles(int archive, int record, int frame = 0, TextureMap textureMap = TextureMap.Albedo)
         {
-            return DaggerfallUnity.Settings.AssetInjection
-                && File.Exists(Path.Combine(texturesPath, GetName(archive, record, frame, textureMap) + extension));
+            if (DaggerfallUnity.Settings.AssetInjection)
+            {
+                for (byte i = 0; i < extensions.Length; i++)
+                {
+                    if (File.Exists(Path.Combine(texturesPath, GetName(archive, record, frame, textureMap) + extensions[i])))
+                        return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -965,8 +972,14 @@ namespace DaggerfallWorkshop.Utility.AssetInjection
         /// <returns>True if texture exists and has been imported.</returns>
         private static bool TryImportTextureFromDisk(string path, bool mipMaps, bool encodeAsNormalMap, bool readOnly, out Texture2D tex)
         {
-            if (!path.EndsWith(extension))
-                path += extension;
+            for (byte i = 0; i < extensions.Length; i++)
+            {
+                if (!path.EndsWith(extensions[i]))
+                {
+                    path += extensions[i];
+                    break;
+                }
+            }
 
             if (File.Exists(path))
             {
